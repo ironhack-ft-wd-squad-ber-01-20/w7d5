@@ -3,7 +3,9 @@ import React, { Component } from 'react';
 const ProductRow = props => {
   return (
     <tr>
-      <td>{props.product.name}</td>
+      <td style={{ color: props.product.stocked ? 'inherit' : 'red' }}>
+        {props.product.name}
+      </td>
       <td>{props.product.price}</td>
     </tr>
   );
@@ -28,13 +30,20 @@ const ProductTable = props => {
 };
 
 const SearchBar = props => {
-  console.log(props.search);
   return (
     <div>
       <input
         value={props.search}
         onChange={event => {
           props.updateSearchText(event.target.value);
+        }}
+      />
+      <label>Only products in stock?</label>
+      <input
+        type="checkbox"
+        checked={props.stocked}
+        onChange={event => {
+          props.updateChecked(event.target.checked);
         }}
       />
     </div>
@@ -53,6 +62,12 @@ export default class FilterableProductTable extends Component {
     });
   };
 
+  updateChecked = bool => {
+    this.setState({
+      stocked: bool
+    });
+  };
+
   // componentDidMount() {
   //   setTimeout(() => {
   //     this.updateSearchText('ball');
@@ -60,9 +75,25 @@ export default class FilterableProductTable extends Component {
   // }
 
   render() {
-    const products = this.props.products.filter(product =>
-      product.name.toLowerCase().includes(this.state.search.toLowerCase())
-    );
+    const products = this.props.products.filter(product => {
+      if (this.state.stocked) {
+        return (
+          product.name
+            .toLowerCase()
+            .includes(this.state.search.toLowerCase()) && product.stocked
+        );
+      } else {
+        return product.name
+          .toLowerCase()
+          .includes(this.state.search.toLowerCase());
+      }
+      // return (
+      //   product.name.toLowerCase().includes(this.state.search.toLowerCase()) &&
+      //   (this.state.stocked ? product.stocked : true)
+      // );
+    });
+
+    console.log(products.length);
 
     return (
       <div>
@@ -70,6 +101,8 @@ export default class FilterableProductTable extends Component {
         <SearchBar
           updateSearchText={this.updateSearchText}
           search={this.state.search}
+          updateChecked={this.updateChecked}
+          stocked={this.state.stocked}
         />
         <ProductTable products={products} />
       </div>
